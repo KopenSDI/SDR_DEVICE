@@ -9,5 +9,5 @@ export RABBITMQ_PORT=30672
 
 source /opt/ros/jazzy/setup.bash
 
-python3 exporter.py
+python3 ../src/exporter.py
 

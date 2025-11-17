@@ -14,14 +14,33 @@
 5. [프로세스 실행](#프로세스-실행)
    1. [데이터 추출 전 준비](#데이터-추출-전-준비)
    2. [배터리·위치 정보 추출](#배터리위치-정보-추출)
-6. [참고 문서](#참고-문서)
+6. [스크립트 사용 가이드](#7-스크립트-사용-가이드)
+7. [참고 문서](#참고-문서)
 
 ## 🗂️ 1. 리포지터리 구조
 
 ```text
-KETI_TURTLEBOT/                 # TurtleBot Raspberry Pi 측 전용 디렉터리
-├── exporter.py                   # ↳ ROS ✕ metric-collector 브릿지 (Python 3 Node)
-├── run_exporter.py               # ↳ 실행 래퍼: ENV 주입 + ROS setup + exporter 호출
+SDR_DEVICE/                      # TurtleBot Raspberry Pi 측 전용 디렉터리
+├── src/                          # 소스 코드
+│   └── exporter.py               # ↳ ROS ✕ metric-collector 브릿지 (Python 3 Node)
+├── scripts/                      # 실행 스크립트들
+│   ├── k3s/                      # ↳ K3s 클러스터 설정 및 관리 스크립트
+│   │   ├── 01.sync-time-from-server.sh
+│   │   ├── 02.k3s-auto-join.sh
+│   │   ├── 03.load-docker-images.sh
+│   │   ├── save-docker-images.sh
+│   │   ├── remove-k3s.sh
+│   │   ├── README.md
+│   │   └── CONFIGURATION.md
+│   ├── network/                  # ↳ 네트워크 외부망 차단/복구 스크립트
+│   │   ├── 01.block_network_option.sh
+│   │   ├── 04.restore_network_option.sh
+│   │   └── README.md
+│   └── turtlebot3/               # ↳ TurtleBot3 관련 스크립트
+│       ├── bringup-turtlebot-discovery.sh
+│       ├── README.md
+│       └── CONFIGURATION.md
+│   └── run_exporter.sh          # ↳ 실행 래퍼: ENV 주입 + ROS setup + exporter 호출
 └── README.md                     # ↳ (현재) 사용자 가이드
 ```
 
@@ -40,9 +59,12 @@ KETI_TURTLEBOT/                 # TurtleBot Raspberry Pi 측 전용 디렉터�
 
 | 경로                                 | 유형       | 핵심 기능                                                                                                  |
 | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
-| **exporter.py**                    | Python 3 | `/battery_state`·`/amcl_pose` 구독 → 5 초마다 metric-collector 발행  (큐: `turtlebot.telemetry`)|
-| **run\_exporter.py**               | Bash     | metric-collector·Robot 식별 ENV를 설정하고 `python3 exporter.py` 실행                          |
-| **README.md**                      | Markdown | 기존 간단 가이드를 포함.    
+| **src/exporter.py**                | Python 3 | `/battery_state`·`/amcl_pose` 구독 → 5 초마다 metric-collector 발행  (큐: `turtlebot.telemetry`)|
+| **scripts/run\_exporter.sh**       | Bash     | metric-collector·Robot 식별 ENV를 설정하고 `python3 ../src/exporter.py` 실행                          |
+| **scripts/k3s/**                   | Shell    | K3s 클러스터 설정, 시간 동기화, Docker 이미지 관리 스크립트                                          |
+| **scripts/network/**                | Shell    | 네트워크 외부망 차단 및 복구 스크립트                                                                  |
+| **scripts/turtlebot3/**            | Shell    | TurtleBot3 bringup 및 Discovery Server 설정 스크립트                                                 |
+| **README.md**                      | Markdown | 프로젝트 전체 가이드 및 스크립트 사용법    
 
 ## 3. 프로세스 역할
 - 📡 **run_exporter**: 터틀봇의 배터리 상태와 위치 정보를 실시간으로 수집해 Metric-Collector에 전송하는 익스포터 프로세스
@@ -85,7 +107,7 @@ sudo apt install -y python3-pika  # 터틀봇 메트릭 데이터 관련 의존�
 ### 초기 환경 세팅 <a id="초기-환경-세팅"></a>
 
 ```bash
-vi run_exporter.py  # 주석 처리된 부분을 본인 환경에 맞게 수정(주석 설명 참고고)
+vi scripts/run_exporter.sh  # 주석 처리된 부분을 본인 환경에 맞게 수정(주석 설명 참고)
 ```
 
 
@@ -120,7 +142,7 @@ ros2 launch turtlebot3_cartographer cartographer.launch.py  # 공식 가이드 �
 ros2 launch turtlebot3_navigation2 navigation2.launch.py   # 공식 가이드 참고
 
 # 4) 데이터 수집 프로세스 실행(터틀봇에서 실행)
-./run_exporter.py # SDI-스케줄러 사용시 꼭 필요합니다.
+./scripts/run_exporter.sh # SDI-스케줄러 사용시 꼭 필요합니다.
 ```
 
 실행 결과
@@ -130,12 +152,53 @@ ros2 launch turtlebot3_navigation2 navigation2.launch.py   # 공식 가이드 �
 > **중요** SLAM 단계에서 생성한 맵(.pgm & .yaml)을 저장한 뒤 Navigation을 실행해야 위치 토픽이 정상적으로 게시된다.
 
 ---
+## 7. 스크립트 사용 가이드 <a id="스크립트-사용-가이드"></a>
+
+### 7.1 K3s 설정 스크립트
+
+K3s 클러스터 설정 및 관리를 위한 스크립트들이 `scripts/k3s/` 디렉토리에 있습니다.
+
+**주요 스크립트:**
+- `01.sync-time-from-server.sh`: 서버 시간 동기화
+- `02.k3s-auto-join.sh`: K3s 클러스터 자동 조인
+- `03.load-docker-images.sh`: Docker 이미지 로드
+- `save-docker-images.sh`: Docker 이미지 저장
+- `remove-k3s.sh`: K3s 제거
+
+자세한 사용법은 `scripts/k3s/README.md` 및 `scripts/k3s/CONFIGURATION.md`를 참고하세요.
+
+### 7.2 네트워크 설정 스크립트
+
+네트워크 외부망 차단 및 복구를 위한 스크립트들이 `scripts/network/` 디렉토리에 있습니다.
+
+**주요 스크립트:**
+- `01.block_network_option.sh`: 외부 네트워크 차단
+- `04.restore_network_option.sh`: 네트워크 복구
+
+자세한 사용법은 `scripts/network/README.md`를 참고하세요.
+
+### 7.3 TurtleBot3 스크립트
+
+TurtleBot3 관련 스크립트들이 `scripts/turtlebot3/` 디렉토리에 있습니다.
+
+**주요 스크립트:**
+- `bringup-turtlebot-discovery.sh`: Discovery Server를 사용한 TurtleBot3 bringup
+
+자세한 사용법은 `scripts/turtlebot3/README.md` 및 `scripts/turtlebot3/CONFIGURATION.md`를 참고하세요.
+
+**⚠️ IP 주소 설정 주의사항:**
+- 각 스크립트 디렉토리의 `CONFIGURATION.md` 파일에서 IP 주소 설정 방법을 확인하세요.
+- 하드코딩된 IP 주소가 있는 경우 환경에 맞게 수정해야 합니다.
+
+---
+
 ## 참고 문서 <a id="참고-문서"></a>
 
 | 주제 | 링크 |
 |------|------|
 | SLAM 설정 | <https://emanual.robotis.com/docs/en/platform/turtlebot3/slam/#run-slam-node> |
 | Navigation 설정 | <https://emanual.robotis.com/docs/en/platform/turtlebot3/navigation/#run-navigation-nodes> |
+| SDI-Orchestration | <https://github.com/KopenSDI/SDI-Orchestration> |
 
 ---
 

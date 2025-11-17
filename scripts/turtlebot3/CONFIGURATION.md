@@ -26,8 +26,8 @@ CONTROL_PLANE_IP="${CONTROL_PLANE_IP:-10.0.0.39}" # Update to the actual value a
 
 다음 디렉토리들도 IP 주소 설정이 필요할 수 있습니다:
 
-- `../k3s_settings/01.sync-time-from-server.sh` - 서버 IP 주소 (예시: 10.0.0.39)
-- `../k3s_settings/02.k3s-auto-join.sh` - K3s 서버 IP 주소
+- `../k3s/01.sync-time-from-server.sh` - 서버 IP 주소 (예시: 10.0.0.39)
+- `../k3s/02.k3s-auto-join.sh` - K3s 서버 IP 주소
 
 **주의사항:**
 - 모든 IP 주소는 실제 네트워크 환경에 맞게 변경해야 합니다.
