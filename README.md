@@ -190,6 +190,17 @@ TurtleBot3 관련 스크립트들이 `scripts/turtlebot3/` 디렉토리에 있�
 - 각 스크립트 디렉토리의 `CONFIGURATION.md` 파일에서 IP 주소 설정 방법을 확인하세요.
 - 하드코딩된 IP 주소가 있는 경우 환경에 맞게 수정해야 합니다.
 
+### 7.4 Git에 포함되지 않은 바이너리
+
+`.gitignore` 정책 때문에 아래 대용량 파일들은 저장소에 포함되어 있지 않습니다. 필요 시 직접 다운로드해 `scripts/k3s/` 경로에 배치해주세요.
+
+| 경로 | 설명 | 구하는 방법 |
+|------|------|-------------|
+| `scripts/k3s/k3s` | K3s 서버/에이전트 실행 바이너리 | [K3s 공식 릴리스](https://github.com/k3s-io/k3s/releases)에서 해당 버전(arm64) 다운로드 |
+| `scripts/k3s/k3s-airgap-assets-v1.33.4+k3s1-arm64/` | Air-gap 설치용 이미지/스크립트 패키지 | 동일 릴리스 페이지의 airgap assets 혹은 내부 배포 서버에서 수동 복사 |
+
+> 위 파일들이 없으면 `02.k3s-auto-join.sh`, `03.load-docker-images.sh` 등 일부 스크립트가 정상 동작하지 않습니다.
+
 ---
 
 ## 참고 문서 <a id="참고-문서"></a>
