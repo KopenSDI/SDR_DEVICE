@@ -1,7 +1,6 @@
-# Docker images directory
-scripts/k3s/docker_images/
-
-# K3s binaries / airgap assets
-scripts/k3s/k3s
-scripts/k3s/k3s-airgap-assets-v1.33.4+k3s1-arm64/
-
+scripts/etri-setup/k3s/crictl
+scripts/etri-setup/k3s/ctr
+scripts/etri-setup/k3s/k3s
+scripts/etri-setup/k3s/k3s-airgap-assets-v1.33.4+k3s1-arm64/
+scripts/etri-setup/k3s/kubectl
+scripts/etri-setup/k3s/docker_images/
