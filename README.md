@@ -24,22 +24,23 @@ SDR_DEVICE/                      # TurtleBot Raspberry Pi 측 전용 디렉터�
 ├── src/                          # 소스 코드
 │   └── exporter.py               # ↳ ROS ✕ metric-collector 브릿지 (Python 3 Node)
 ├── scripts/                      # 실행 스크립트들
-│   ├── k3s/                      # ↳ K3s 클러스터 설정 및 관리 스크립트
-│   │   ├── 01.sync-time-from-server.sh
-│   │   ├── 02.k3s-auto-join.sh
-│   │   ├── 03.load-docker-images.sh
-│   │   ├── save-docker-images.sh
-│   │   ├── remove-k3s.sh
-│   │   ├── README.md
-│   │   └── CONFIGURATION.md
-│   ├── network/                  # ↳ 네트워크 외부망 차단/복구 스크립트
-│   │   ├── 01.block_network_option.sh
-│   │   ├── 04.restore_network_option.sh
-│   │   └── README.md
-│   └── turtlebot3/               # ↳ TurtleBot3 관련 스크립트
-│       ├── bringup-turtlebot-discovery.sh
-│       ├── README.md
-│       └── CONFIGURATION.md
+│   ├── etri-setup/               # ↳ ETRI 환경 설정 스크립트
+│   │   ├── k3s/                  # ↳ K3s 클러스터 설정 및 관리 스크립트
+│   │   │   ├── 01.sync-time-from-server.sh
+│   │   │   ├── 02.k3s-auto-join.sh
+│   │   │   ├── 03.load-docker-images.sh
+│   │   │   ├── save-docker-images.sh
+│   │   │   ├── remove-k3s.sh
+│   │   │   ├── README.md
+│   │   │   └── CONFIGURATION.md
+│   │   ├── network/              # ↳ 네트워크 외부망 차단/복구 스크립트
+│   │   │   ├── 01.block_network_option.sh
+│   │   │   ├── 04.restore_network_option.sh
+│   │   │   └── README.md
+│   │   └── turtlebot3/           # ↳ TurtleBot3 관련 스크립트
+│   │       ├── bringup-turtlebot-discovery.sh
+│   │       ├── README.md
+│   │       └── CONFIGURATION.md
 │   └── run_exporter.sh          # ↳ 실행 래퍼: ENV 주입 + ROS setup + exporter 호출
 └── README.md                     # ↳ (현재) 사용자 가이드
 ```
@@ -61,9 +62,9 @@ SDR_DEVICE/                      # TurtleBot Raspberry Pi 측 전용 디렉터�
 | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
 | **src/exporter.py**                | Python 3 | `/battery_state`·`/amcl_pose` 구독 → 5 초마다 metric-collector 발행  (큐: `turtlebot.telemetry`)|
 | **scripts/run\_exporter.sh**       | Bash     | metric-collector·Robot 식별 ENV를 설정하고 `python3 ../src/exporter.py` 실행                          |
-| **scripts/k3s/**                   | Shell    | K3s 클러스터 설정, 시간 동기화, Docker 이미지 관리 스크립트                                          |
-| **scripts/network/**                | Shell    | 네트워크 외부망 차단 및 복구 스크립트                                                                  |
-| **scripts/turtlebot3/**            | Shell    | TurtleBot3 bringup 및 Discovery Server 설정 스크립트                                                 |
+| **scripts/etri-setup/k3s/**        | Shell    | K3s 클러스터 설정, 시간 동기화, Docker 이미지 관리 스크립트                                          |
+| **scripts/etri-setup/network/**    | Shell    | 네트워크 외부망 차단 및 복구 스크립트                                                                  |
+| **scripts/etri-setup/turtlebot3/** | Shell    | TurtleBot3 bringup 및 Discovery Server 설정 스크립트                                                 |
 | **README.md**                      | Markdown | 프로젝트 전체 가이드 및 스크립트 사용법    
 
 ## 3. 프로세스 역할
@@ -156,7 +157,7 @@ ros2 launch turtlebot3_navigation2 navigation2.launch.py   # 공식 가이드 �
 
 ### 7.1 K3s 설정 스크립트
 
-K3s 클러스터 설정 및 관리를 위한 스크립트들이 `scripts/k3s/` 디렉토리에 있습니다.
+K3s 클러스터 설정 및 관리를 위한 스크립트들이 `scripts/etri-setup/k3s/` 디렉토리에 있습니다.
 
 **주요 스크립트:**
 - `01.sync-time-from-server.sh`: 서버 시간 동기화
@@ -165,26 +166,26 @@ K3s 클러스터 설정 및 관리를 위한 스크립트들이 `scripts/k3s/` �
 - `save-docker-images.sh`: Docker 이미지 저장
 - `remove-k3s.sh`: K3s 제거
 
-자세한 사용법은 `scripts/k3s/README.md` 및 `scripts/k3s/CONFIGURATION.md`를 참고하세요.
+자세한 사용법은 `scripts/etri-setup/k3s/README.md` 및 `scripts/etri-setup/k3s/CONFIGURATION.md`를 참고하세요.
 
 ### 7.2 네트워크 설정 스크립트
 
-네트워크 외부망 차단 및 복구를 위한 스크립트들이 `scripts/network/` 디렉토리에 있습니다.
+네트워크 외부망 차단 및 복구를 위한 스크립트들이 `scripts/etri-setup/network/` 디렉토리에 있습니다.
 
 **주요 스크립트:**
 - `01.block_network_option.sh`: 외부 네트워크 차단
 - `04.restore_network_option.sh`: 네트워크 복구
 
-자세한 사용법은 `scripts/network/README.md`를 참고하세요.
+자세한 사용법은 `scripts/etri-setup/network/README.md`를 참고하세요.
 
 ### 7.3 TurtleBot3 스크립트
 
-TurtleBot3 관련 스크립트들이 `scripts/turtlebot3/` 디렉토리에 있습니다.
+TurtleBot3 관련 스크립트들이 `scripts/etri-setup/turtlebot3/` 디렉토리에 있습니다.
 
 **주요 스크립트:**
 - `bringup-turtlebot-discovery.sh`: Discovery Server를 사용한 TurtleBot3 bringup
 
-자세한 사용법은 `scripts/turtlebot3/README.md` 및 `scripts/turtlebot3/CONFIGURATION.md`를 참고하세요.
+자세한 사용법은 `scripts/etri-setup/turtlebot3/README.md` 및 `scripts/etri-setup/turtlebot3/CONFIGURATION.md`를 참고하세요.
 
 **⚠️ IP 주소 설정 주의사항:**
 - 각 스크립트 디렉토리의 `CONFIGURATION.md` 파일에서 IP 주소 설정 방법을 확인하세요.
@@ -192,12 +193,12 @@ TurtleBot3 관련 스크립트들이 `scripts/turtlebot3/` 디렉토리에 있�
 
 ### 7.4 필요한 바이너리 파일 설치
 
-다음 파일들은 `.gitignore`로 인해 저장소에 포함되지 않습니다. K3s 스크립트를 사용하려면 `scripts/k3s/` 디렉토리에 직접 설치해야 합니다.
+다음 파일들은 `.gitignore`로 인해 저장소에 포함되지 않습니다. K3s 스크립트를 사용하려면 `scripts/etri-setup/k3s/` 디렉토리에 직접 설치해야 합니다.
 
 | 경로 | 설명 | 설치 방법 |
 |------|------|----------|
-| `scripts/k3s/k3s` | K3s 바이너리 파일 | [K3s 공식 릴리스](https://github.com/k3s-io/k3s/releases)에서 arm64 버전 다운로드 |
-| `scripts/k3s/k3s-airgap-assets-v1.33.4+k3s1-arm64/` | Air-gap 설치 패키지 | 동일 릴리스 페이지의 airgap assets 다운로드 또는 내부 배포 서버에서 복사 |
+| `scripts/etri-setup/k3s/k3s` | K3s 바이너리 파일 | [K3s 공식 릴리스](https://github.com/k3s-io/k3s/releases)에서 arm64 버전 다운로드 |
+| `scripts/etri-setup/k3s/k3s-airgap-assets-v1.33.4+k3s1-arm64/` | Air-gap 설치 패키지 | 동일 릴리스 페이지의 airgap assets 다운로드 또는 내부 배포 서버에서 복사 |
 
 > **주의**: 위 파일들이 없으면 `02.k3s-auto-join.sh`, `03.load-docker-images.sh` 등 K3s 관련 스크립트가 정상 동작하지 않습니다.
 
