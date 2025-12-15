@@ -4,7 +4,7 @@ set -x
 
 K3S_DATA_DIR=${K3S_DATA_DIR:-/var/lib/rancher/k3s}
 
-/root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/k3s-killall.sh
+/root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/k3s-killall.sh
 
 if command -v systemctl; then
     systemctl disable k3s-agent
@@ -19,7 +19,7 @@ rm -f /etc/systemd/system/k3s-agent.service
 rm -f /etc/systemd/system/k3s-agent.service.env
 
 remove_uninstall() {
-    rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/k3s-agent-uninstall.sh
+    rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/k3s-agent-uninstall.sh
 }
 trap remove_uninstall EXIT
 
@@ -29,8 +29,8 @@ if (ls /etc/systemd/system/k3s*.service || ls /etc/init.d/k3s*) >/dev/null 2>&1;
 fi
 
 for cmd in kubectl crictl ctr; do
-    if [ -L /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/$cmd ]; then
-        rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/$cmd
+    if [ -L /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/$cmd ]; then
+        rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/$cmd
     fi
 done
 
@@ -58,8 +58,8 @@ rm -rf /run/k3s
 rm -rf /run/flannel
 clean_mounted_directory ${K3S_DATA_DIR}
 rm -rf /var/lib/kubelet
-rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/k3s
-rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/k3s/k3s-killall.sh
+rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/k3s
+rm -f /root/KETI_SDI_DEVICE/SDR_DEVICE/scripts/etri-setup/k3s/k3s-killall.sh
 
 if type yum >/dev/null 2>&1; then
     yum remove -y k3s-selinux

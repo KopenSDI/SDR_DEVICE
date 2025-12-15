@@ -18,18 +18,8 @@ echo "TurtleBot REMOTE PC Bringup (Discovery)"
 echo "======================================"
 echo ""
 
-# Control Plane IP configuration
-# Priority: command line argument > environment variable > default value
-if [ $# -ge 1 ]; then
-    CONTROL_PLANE_IP="$1"
-elif [ -n "${CONTROL_PLANE_IP:-}" ]; then
-    # Use environment variable if set
-    CONTROL_PLANE_IP="${CONTROL_PLANE_IP}"
-else
-    # Default value
-    CONTROL_PLANE_IP="10.0.0.39"
-fi
-
+# Control Plane IP configuration (override with environment variables if needed)
+CONTROL_PLANE_IP="${CONTROL_PLANE_IP:-10.0.0.39}" # Update to the actual value as needed
 DISCOVERY_PORT="${DISCOVERY_PORT:-11811}"
 ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-32}"
 TURTLEBOT3_MODEL="${TURTLEBOT3_MODEL:-burger}"

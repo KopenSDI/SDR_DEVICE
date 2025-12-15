@@ -35,9 +35,12 @@ ssh_exec() {
   ssh -o StrictHostKeyChecking=accept-new -o PubkeyAuthentication=no -o PasswordAuthentication=yes -o PreferredAuthentications=password -o BatchMode=no -p "$SSH_PORT" "$SSH_USER@$SERVER_IP" "$1"
 }
 
-ASSETS_DIR=$(find . -maxdepth 1 -type d -name "k3s-airgap-assets-*" -print -quit)
+# 스크립트 파일이 있는 디렉토리 경로를 가져옵니다 (심볼릭 링크도 처리)
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+ASSETS_DIR=$(find "${SCRIPT_DIR}" -maxdepth 1 -type d -name "k3s-airgap-assets-*" -print -quit)
 if [[ -z "$ASSETS_DIR" ]]; then
-  echo "Error: Failed to find k3s-airgap-assets-* directory."; exit 4;
+  echo "Error: Failed to find k3s-airgap-assets-* directory in ${SCRIPT_DIR}."; exit 4;
 fi
 INSTALL_SH_PATH="${ASSETS_DIR}/install.sh"
 if [ ! -f "$INSTALL_SH_PATH" ]; then
@@ -45,11 +48,11 @@ if [ ! -f "$INSTALL_SH_PATH" ]; then
 fi
 echo "→ Install script path: ${INSTALL_SH_PATH}"
 
-# ** [수정된 부분] k3s 바이너리 경로 설정 (현재 스크립트 실행 디렉토리) **
-# 스크립트가 실행되는 현재 디렉토리(".")에서 k3s 바이너리를 찾도록 설정합니다.
-K3S_BIN_DIR=$(pwd)
+# ** [수정된 부분] k3s 바이너리 경로 설정 (스크립트 파일이 있는 디렉토리) **
+# 스크립트 파일이 있는 디렉토리에서 k3s 바이너리를 찾도록 설정합니다.
+K3S_BIN_DIR="${SCRIPT_DIR}"
 if [ ! -f "${K3S_BIN_DIR}/k3s" ]; then
-  echo "Error: Cannot find 'k3s' binary in current directory (${K3S_BIN_DIR})."; exit 5;
+  echo "Error: Cannot find 'k3s' binary in script directory (${K3S_BIN_DIR})."; exit 5;
 fi
 echo "→ K3s binary path: ${K3S_BIN_DIR}/k3s"
 # ** [수정된 부분] 끝 **
